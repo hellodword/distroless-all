@@ -89,21 +89,19 @@ healthcheck:
 2. embed the healthcheck to the PID 1, Go for example:
 
 ```go
-func doHealthcheck() int {
-	http.DefaultClient.Timeout = time.Second
-	_, err := http.Get()
-	if err != nil {
-		return 1
-	}
-	return 0
-}
-
-func main() {
-	healthcheck := flag.Bool("healthcheck", false, "")
+	healthcheck := flag.String("healthcheck", "", "http://1.example.org,http://2.example.org")
 	flag.Parse()
-
-	if *healthcheck {
-		os.Exit(doHealthcheck())
+	if *healthcheck != "" {
+		http.DefaultClient.Timeout = time.Second
+		for _, healhealthcheckURL := range strings.Split(*healthcheck, ",") {
+			if healhealthcheckURL == "" {
+				continue
+			}
+			if _, err := http.Get(healhealthcheckURL); err != nil {
+				os.Exit(1)
+			}
+		}
+		os.Exit(0)
 	}
 ```
 
